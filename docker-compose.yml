@@ -1,0 +1,40 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: partner-bff-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 8
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: partner-bff-api
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      Security__ApiKey: dev-partner-api-key
+      PartnerVerification__BaseUrl: http://localhost:8080
+      PartnerVerification__TimeoutProbability: "0.3"
+      PartnerVerification__MaxRetryAttempts: "3"
+      PartnerVerification__RetryDelayMilliseconds: "200"
+      MessageBroker__Provider: RabbitMQ
+      MessageBroker__Host: rabbitmq
+      MessageBroker__Port: "5672"
+      MessageBroker__UserName: guest
+      MessageBroker__Password: guest
+      MessageBroker__QueueName: partner.transactions
+    depends_on:
+      rabbitmq:
+        condition: service_healthy

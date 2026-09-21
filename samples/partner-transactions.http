@@ -1,0 +1,46 @@
+@host http://localhost:5263
+@apiKey = dev-partner-api-key
+
+### Health
+GET {{host}}/health
+
+### Dummy partner verification
+GET {{host}}/internal/v1/partners/P-1001/verify
+
+### Accept a partner transaction
+POST {{host}}/api/v1/partner/transactions
+Content-Type: application/json
+X-Api-Key: {{apiKey}}
+
+{
+  "partnerId": "P-1001",
+  "transactionReference": "TXN-99823",
+  "amount": 250.00,
+  "currency": "USD",
+  "timestamp": "2024-05-10T14:30:00Z"
+}
+
+### Rejected: amount must be greater than 0
+POST {{host}}/api/v1/partner/transactions
+Content-Type: application/json
+X-Api-Key: {{apiKey}}
+
+{
+  "partnerId": "P-1001",
+  "transactionReference": "TXN-99823",
+  "amount": 0,
+  "currency": "USD",
+  "timestamp": "2024-05-10T14:30:00Z"
+}
+
+### Rejected: missing API key
+POST {{host}}/api/v1/partner/transactions
+Content-Type: application/json
+
+{
+  "partnerId": "P-1001",
+  "transactionReference": "TXN-99823",
+  "amount": 250.00,
+  "currency": "USD",
+  "timestamp": "2024-05-10T14:30:00Z"
+}
